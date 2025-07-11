@@ -1,0 +1,355 @@
+// Electric Counterpoint Fast I - Steve Reich
+// Made with love by <3<
+
+let g = .4
+
+const gainSegment = ({
+  totalSteps,
+  start     = 0,
+  length,
+  startGain = 0,
+  endGain   = 1
+}) =>
+  Array.from({ length }, (_, i) => {
+    const t = (start + i) / (totalSteps - 1);
+    return startGain + t * (endGain - startGain);
+  });
+
+const guitar = (pattern) =>
+     pattern
+    .note()
+    .cpm(192/4)
+    .adsr("0:5:.7:1.5")
+    .lpq(0)
+    .early(perlin.range(-0.01,0.01))
+    .postgain(perlin.range(0.8,1.2)); // Add some dynamics so it feels more live
+
+// A “electric guitar” subclass
+const electricGuitar = (pattern) =>
+     guitar(pattern)
+    .sound("gm_acoustic_guitar_nylon")
+    .lpf(1000)
+    .room(.2)
+
+// A “bass guitar” subclass
+const bassGuitar = (pattern) =>
+     guitar(pattern)
+    .lpf(1050)
+    .sound("gm_acoustic_bass")
+    .postgain(0.6)
+
+guitar_1: electricGuitar(
+  arrange(
+    // Pages 1-26
+    [4*26, "~".gain(0)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_1: electricGuitar(
+  arrange(
+    // Pages 1-32
+    [4*32, "~".gain(0)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_3: electricGuitar(
+  arrange(
+    // Page 1
+    [1, "b5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   0, length: 8, startGain: 0, endGain: g})))],
+    [1, "b5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   8, length: 8, startGain: 0, endGain: g})))],
+    [1, "b5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:  16, length: 8, startGain: 0, endGain: g})))],
+    [1, "b5!8".gain(g)],
+
+    // Page 2
+    [4, "b5!8".gain(g)],
+
+    // Page 3
+    [1, "b5!8".gain(seq(g, g, ...gainSegment({ totalSteps: 2*8, start: 0, length: 8-2, startGain: g, endGain: 0})))],
+    [1, "b5!8".gain(seq(...gainSegment({ totalSteps: 2*8, start: 8-2, length: 8, startGain: g, endGain: 0})))],
+    [1, "b5!2 ~!3 g5!3".gain(seq(
+                        ...gainSegment({ totalSteps: 2*8, start: 16-2, length: 2, startGain: g, endGain: 0}),
+                        0, 0, 0,
+                        ...gainSegment({ totalSteps: 3*8+3, start: 0, length: 3, startGain: 0, endGain: g})))],
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 3*8+3, start:  3, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 4
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 3*8+3, start: 11, length: 8, startGain: 0, endGain: g})))],
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 3*8+3, start: 19, length: 8, startGain: 0, endGain: g})))],
+    [2, "g5!8".gain(g)],
+
+    // Page 5
+    [3, "g5!8".gain(g)],
+    [1, "g5!8".gain(seq(g, g, g, g, ...gainSegment({ totalSteps: 3*8-6, start: 0, length: 8-4, startGain: g, endGain: 0})))],
+
+    // Page 6
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 3*8-6, start: 8-4, length: 8, startGain: g, endGain: 0})))],
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 3*8-6, start: 16-4, length: 6, startGain: g, endGain: 0}), 0, 0))],
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 4*8-1, start: 0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 4*8-1, start: 8-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 7
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 4*8-1, start: 16-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 4*8-1, start: 24-1, length: 8, startGain: 0, endGain: g})))],
+    [2, "f#5!8".gain(g)],
+
+    // Page 8
+    [2, "f#5!8".gain(g)],
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8-4, startGain: g, endGain: 0})))],
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8-4, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 9
+    [1, "f#5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 16-4, length: 8, startGain: g, endGain: 0})))],
+    [1, "~".gain(0)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_4: electricGuitar(
+  arrange(
+    // Page 1
+    [1, "~".gain(0)],
+    [1, "~ g5!7".gain(seq(0, ...gainSegment({ totalSteps: 3*8-1, start:   0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "g5!8".gain(seq(0, ...gainSegment({ totalSteps: 3*8-1, start:   8-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "g5!8".gain(seq(0, ...gainSegment({ totalSteps: 3*8-1, start:   16-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 2
+    [4, "g5!8".gain(g)],
+
+    // Page 3
+    [2, "g5!8".gain(g)],
+    [1, "g5!8".gain(seq(g, g, ...gainSegment({ totalSteps: 2*8-2, start: 0, length: 8-2, startGain: g, endGain: 0})))],
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 2*8-2, start: 8-2, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 4
+    [1, "~!3 e5!5".gain(seq(
+                        0, 0, 0,
+                       ...gainSegment({ totalSteps: 4*8-3, start: 0, length: 8-3, startGain: 0, endGain: g})))],
+
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 8-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 16-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 24-3, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [4, "e5!8".gain(g)],
+
+    // Page 6
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8, length: 8, startGain: g, endGain: 0})))],
+    [1, "e5!4 ~!3 d5".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 16, length: 4, startGain: g, endGain: 0})),
+                          0, 0, 0,
+                          ...gainSegment({ totalSteps: 4*8-3, start: 0, length: 1, startGain: 0, endGain: g})
+                          )],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 7
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 9, length: 8, startGain: 0, endGain: g})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 17, length: 8, startGain: 0, endGain: g})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 9, length: 4, startGain: 0, endGain: g})),
+                   g, g, g, g
+                   )],
+    [1, "d5!8".gain(g)],
+
+    // Page 8
+    [3, "d5!8".gain(g)],
+    [1, "d5!8".gain(seq(g, g, g, g, g, g,
+                        ...gainSegment({ totalSteps: 3*8-2, start: 0, length: 2, startGain: g, endGain: 0})))],
+
+    // Page 9
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8-2, start: 2, length: 8, startGain: g, endGain: 0})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8-2, start: 10, length: 8, startGain: g, endGain: 0})))],
+    [1, "d5!4 ~!2 g5".gain(seq(...gainSegment({ totalSteps: 3*8-2, start: 18, length: 4, startGain: g, endGain: 0}),
+                       0, 0,
+                      ...gainSegment({ totalSteps: 4*8-7, start: 0, length: 1, startGain: 0, endGain: g})
+                              ))],
+    [1, "g5!8".gain(seq(...gainSegment({ totalSteps: 4*8-7, start: 1, length: 8, startGain: 0, endGain: g})))],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_5: electricGuitar(
+  arrange(
+    // Page 1
+    [1, "~!3 e5!5".gain(seq(0, 0, 0, ...gainSegment({ totalSteps: 4*8-3, start:   0, length: 8-3, startGain: 0, endGain: g})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start:   8-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start:   16-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start:   24-3, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 2
+    [2, "e5!8".gain(g)],
+    [2, "e5!8".gain(g)],
+
+    // Page 3
+    [2, "e5!8".gain(g)],
+    [1, "e5!8".gain(seq(g, g, ...gainSegment({ totalSteps: 2*8-2, start: 0, length: 8-2, startGain: g, endGain: 0})))],
+    [1, "e5!8".gain(seq(...gainSegment({ totalSteps: 2*8-2, start: 8-2, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 4
+    [1, "~!3 c5!5".gain(seq(
+                        0, 0, 0,
+                       ...gainSegment({ totalSteps: 4*8-3, start: 0, length: 8-3, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 8-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 16-3, length: 8, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 4*8-3, start: 24-3, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [4, "c5!8".gain(g)],
+
+    // Page 6
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8, length: 8, startGain: g, endGain: 0})))],
+    [1, "c5!4 ~!3 b5".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 16, length: 4, startGain: g, endGain: 0})))],
+
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_6: electricGuitar(
+  arrange(
+    // Page 1
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   0, length: 8, startGain: 0, endGain: g})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   8, length: 8, startGain: 0, endGain: g})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:  16, length: 8, startGain: 0, endGain: g})))],
+    [1, "d518".gain(g)],
+
+    // Page 2
+    [4, "d518".gain(g)],
+
+    // Page 3
+    [2, "d5!8".gain(g)],
+    [1, "b5!8".gain(seq(g, g, ...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "d5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 4
+    [1, "d5!6 ~!2".gain(seq(
+                        ...gainSegment({ totalSteps: 3*8-4, start: 16, length: 8-4, startGain: g, endGain: 0}),
+                        0, 0))],
+    [1, "~ b4!7".gain(seq(0, ...gainSegment({ totalSteps: 4*8-5, start:  0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  8-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  16-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  24-1, length: 8-2, startGain: 0, endGain: g}),
+                       g, g))],
+    [3, "b4!8".gain(g)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_7: electricGuitar(
+  arrange(
+    // Page 1
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   0, length: 8, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   8, length: 8, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:  16, length: 8, startGain: 0, endGain: g})))],
+    [1, "c5!8".gain(g)],
+
+    // Page 2
+    [4, "c5!8".gain(g)],
+
+    // Page 3
+    [2, "c5!8".gain(g)],
+    [1, "c5!8".gain(seq(g, g, ...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "c5!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 4
+    [1, "c5!6 ~!2".gain(seq(
+                        ...gainSegment({ totalSteps: 3*8-4, start: 16, length: 8-4, startGain: g, endGain: 0}),
+                        0, 0))],
+    [1, "~ a4!7".gain(seq(0, ...gainSegment({ totalSteps: 4*8-5, start:  0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "a4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  8-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "a4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  16-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [1, "a4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  24-1, length: 8-2, startGain: 0, endGain: g}),
+                       g, g))],
+    [3, "a4!8".gain(g)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+guitar_8$: electricGuitar(
+  arrange(
+    // Page 1
+    [3, "~".gain(0)],
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   0, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 2
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:   8, length: 8, startGain: 0, endGain: g})))],
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 3*8, start:  16, length: 8, startGain: 0, endGain: g})))],
+    [2, "b4!8".gain(g)],
+
+    //Page 3
+    [2, "b4!8".gain(g)],
+    [1, "b4!8".gain(seq(g, g, ...gainSegment({ totalSteps: 3*8-4, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "b4!8".gain(seq(...gainSegment({ totalSteps: 3*8-4, start: 8, length: 8, startGain: g, endGain: 0})))],
+
+    // Page 4
+    [1, "b4!6 ~!2".gain(seq(
+                        ...gainSegment({ totalSteps: 3*8-4, start: 16, length: 8-4, startGain: g, endGain: 0}),
+                        0, 0))],
+    [1, "~ g4!7".gain(seq(0, ...gainSegment({ totalSteps: 4*8-5, start:  0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "g4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  8-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "g4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  16-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [1, "g4!8".gain(seq(...gainSegment({ totalSteps: 4*8-5, start:  24-1, length: 8-2, startGain: 0, endGain: g}),
+                       0, 0))],
+    [3, "g4!8".gain(g)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)
+
+bass_guitar_1_2$: bassGuitar(
+  arrange(
+    // Page 1
+    [4, "~".gain(0)],
+
+    // Page 2
+    [1, "~ [a2, a3]!7".gain(seq(...gainSegment({ totalSteps: 3*8-1, start:   0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "[a2, a3]!8".gain(seq(...gainSegment({ totalSteps: 3*8-1, start:   8-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "[a2, a3]!8".gain(seq(...gainSegment({ totalSteps: 3*8-1, start:   16-1, length: 8, startGain: 0, endGain: g})))],
+    [1, "[a2, a3]!8".gain(g)],
+
+    // Page 3
+    [1, "[a2, a3]!8".gain(seq(...gainSegment({ totalSteps: 3*8, start: 0, length: 8, startGain: g, endGain: 0})))],
+    [1, "[a2, a3]!8".gain(seq(...gainSegment({ totalSteps: 3*8, start: 8, length: 8, startGain: g, endGain: 0})))],
+    [1, "[a2, a3]!8".gain(seq(...gainSegment({ totalSteps: 3*8, start: 16, length: 8, startGain: g, endGain: 0})))],
+    [1, "~".gain(0)],
+
+    // Page 4
+    [2, "~".gain(0)],
+    [1, "~ [c3, c4]!7".gain(seq(0, ...gainSegment({ totalSteps: 3*8-1, start:  0, length: 8-1, startGain: 0, endGain: g})))],
+    [1, "[c3, c4]!8".gain(seq(...gainSegment({ totalSteps: 3*8-1, start:  8-1, length: 8, startGain: 0, endGain: g})))],
+
+    // Page 5
+    [1, "[c3, c4]!8".gain(seq(...gainSegment({ totalSteps: 3*8-1, start:  16-1, length: 8, startGain: 0, endGain: g})))],
+    [2, "[c3, c4]!8".gain(g)],
+    [1, "[c3, c4]!8".gain(seq(g,g, ...gainSegment({ totalSteps: 3*8-2, start:  0, length: 8-2, startGain: g, endGain: 0})))],
+
+    // Page 6
+    [1, "[c3, c4]!8".gain(seq(g,g, ...gainSegment({ totalSteps: 3*8-2, start:  8-2, length: 8, startGain: g, endGain: 0})))],
+    [1, "[c3, c4]!8".gain(seq(g,g, ...gainSegment({ totalSteps: 3*8-2, start:  16-2, length: 8, startGain: g, endGain: 0})))],
+    [2, "~".gain(0)],
+
+    // Ugly escape
+    [100, "~"]
+  )
+)

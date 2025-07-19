@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Electric Counterpoint</title>
+  <script src="https://unpkg.com/@strudel/repl@1.2.3"></script>
+</head>
+<body>
+  <div id="strudel"></div>
+
+  <script>
+    const filename = 'fast_1.strudel'; // the file you want to load/save
+    let repl;
+
+    // Monkey-patch strudel-editor to expose getCode()
+    customElements.whenDefined('strudel-editor').then(() => {
+      const proto = customElements.get('strudel-editor').prototype;
+      if (!proto.getCode) {
+        proto.getCode = function () {
+          return this.editor?.code;
+        };
+      }
+    });
+
+    // Load the .strudel file and create the editor
+    fetch('./' + filename)
+      .then(response => response.text())
+      .then(code => {
+        repl = document.createElement('strudel-editor');
+        repl.setAttribute('code', code);
+        document.getElementById('strudel').appendChild(repl);
+      });
+
+    // Ctrl+S / Cmd+S to save the live code
+    document.addEventListener('keydown', (e) => {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const isSaveShortcut = (isMac && e.metaKey && e.key === 's') || (!isMac && e.ctrlKey && e.key === 's');
+
+      if (isSaveShortcut) {
+        e.preventDefault();
+
+        if (!repl || typeof repl.getCode !== 'function') {
+          console.warn('Editor not ready or getCode not available');
+          return;
+        }
+
+        const liveCode = repl.getCode();
+        if (!liveCode) {
+          console.warn('Could not retrieve live code.');
+          return;
+        }
+
+        const blob = new Blob([liveCode], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+
+        const now = new Date();
+        const timestamp = now.toISOString()
+          .replace(/T/, '_')
+          .replace(/:/g, '-')
+          .replace(/\..+/, '');
+
+        const base = 'fast_1';
+        const filenameWithTimestamp = `${base}_${timestamp}.strudel`;
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filenameWithTimestamp;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+    });
+  </script>
+</body>
+</html>

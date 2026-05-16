@@ -1,18 +1,36 @@
-// Electric Counterpoint Fast I - Steve Reich
-// Made with love by <3<
+// @title Electric Counterpoint - Fast I
+// @by Steve Reich
+// @details Strudel implementation by Tymoteusz Burak
+//          Composition rights belong to original composer/publisher
 
-let g = .04
+let g = .4 // gain
+
+const arrangeKeys = ["E4:Minor", "C5:Minor", "E4:Minor", "C5:Minor", "E4:Minor"]
+const colors = [
+'#292f56',
+'#204370',
+'#005886',
+'#006d95',
+'#00829d',
+'#0097a3',
+'#00ada4',
+'#00c49e',
+'#23d890',
+'#70ea80',
+'#acfa70'
+]
 
 // This produces
 // [tonal] error: invalid scale step "~", expected number or integer with optional # b suffixes
 // probably due to using `~` in forEach instead of "~" but it works anyway
 // "~" doesnt work cause `m is not a function`
-Array.prototype.genFirstMovement = function () {
+// ¯\(ツ)/¯
+Array.prototype.genFadeInFadeOut = function () {
   const sequence = [];
 
   this.forEach(m => {    
-    const total = m.fadeIn + m.hold + m.fadeOut;
-    console.log(total)
+    // const total = m.offset + m.fadeIn + m.hold + m.fadeOut;
+    // console.log('total:', total, 'offset:', m.offset, 'fadeIn:', m.fadeIn, 'hold:', m.hold, 'fadeOut:', m.fadeOut)
     
     // offset
     for (let i = 0; i < m.offset; i++) {
@@ -61,190 +79,537 @@ Array.prototype.genFirstMovement = function () {
     const gains = chunk.map(e => e.gain);
     const scales = chunk.map(e => e.scale);
 
-    bars.push([
-      1,
-      seq(notes).scale(seq(scales)).gain(seq(gains))
-    ]);
+    bars.push([1, seq(notes).scale(seq(scales)).gain(seq(gains))]);
   }
 
   return bars;
 };
+
+// at the time of writing this there's no rot func in strudel (like one in tidal cycles)
+// early is used here but the rotation is still applied forward
+// sadly we have to specify pulses by hand
+const rot = (steps, pulses) =>
+  p => p.early(steps / pulses)
 
 const guitar = (pattern) =>
      pattern
     .note()
     .cpm(192/4)
     .adsr("0:5:.7:1.5")
-    .lpq(0)
     .early(perlin.range(-0.01,0.01))
     .postgain(perlin.range(0.95,1.05)) // Add some dynamics so it feels more live
-
+    .spectrum()
+  
 // A “electric guitar” subclass
 const electricGuitar = (pattern) =>
      guitar(pattern)
-    .sound("gm_acoustic_guitar_nylon")
-    .lpf(1000)
-    .room(.2)
+    .sound('gm_acoustic_guitar_nylon')
+    .room(.4)
 
 // A “bass guitar” subclass
 const bassGuitar = (pattern) =>
      guitar(pattern)
-    .lpf(1050)
     .sound("gm_acoustic_bass")
-    .postgain(0.6)
 
-guitar_1: electricGuitar(
+let guitar_1 = electricGuitar(
   arrange(
-    // Pages 1-26
-    [26,
-        "~!32"
-        .gain(0)
+    [25*4+1,
+        "~"
     ],
-
-    // Ugly escape
-    [100, "~"]
-  )
-)
-
-guitar_2: electricGuitar(
-  arrange(
-    // Pages 1-32
-    [32,
-        "~!32"
-        .gain(0)
+    [3+36*4+1," \
+              13 13 14 13 11 ~ 10 10 \
+              13 11 ~  13 11 ~ 10 10 \
+              13 13 14 13 11 ~ 10 10 \
+              13 ~  ~  13 11 ~ 10 10 \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .slow(4)
     ],
-
-    // Ugly escape
-    [100, "~"]
+    [2+12*3+2," \
+              8 8 9 8 6 ~ 4 4 \
+              8 6 ~ 8 6 ~ 4 4 \
+              8 8 9 8 6 ~ 4 4 \
+              8 ~ ~ 8 6 ~ 4 4 \
+              "
+        .scale(arrangeKeys[3])
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              13 13 14 13 11 ~ 10 10 \
+              13 11 ~  13 11 ~ 10 10 \
+              13 13 14 13 11 ~ 10 10 \
+              13 ~  ~  13 11 ~ 10 10 \
+              "
+        .scale(arrangeKeys[4])
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[0]).seed(0)
 
-guitar_3: electricGuitar(
+let guitar_2 = electricGuitar(
+  arrange(
+    [31*4+1,
+        "~"
+    ],
+    [3+30*4+1," \
+              13 13 14 13 11 ~ 10 10 \
+              13 11 ~  13 11 ~ 10 10 \
+              13 13 14 13 11 ~ 10 10 \
+              13 ~  ~  13 11 ~ 10 10 \
+              "
+        .scale(arrangeKeys[2])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              8 8 9 8 6 ~ 4 4 \
+              8 6 ~ 8 6 ~ 4 4 \
+              8 8 9 8 6 ~ 4 4 \
+              8 ~ ~ 8 6 ~ 4 4 \
+              "
+        .scale(arrangeKeys[3])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              13 13 14 13 11 ~ 10 10 \
+              13 11 ~  13 11 ~ 10 10 \
+              13 13 14 13 11 ~ 10 10 \
+              13 ~  ~  13 11 ~ 10 10 \
+              "
+        .scale(arrangeKeys[4])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
+  )
+).color(colors[1]).seed(1)
+
+let guitar_3 = electricGuitar(
   arrange(
     ...[
-      { offset: 0, fadeIn: 24, hold: 42, fadeOut: 16, scaleNote: 11, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 44, fadeOut: 18, scaleNote: 9,  scale: "E4:Minor" },
-      { offset: 3, fadeIn: 31, hold: 36, fadeOut: 20, scaleNote: 8,  scale: "E4:Minor" },
-      { offset: 9, fadeIn: 23, hold: 36, fadeOut: 16, scaleNote: 6,  scale: "C5:Minor" },
-      { offset: 3, fadeIn: 25, hold: 38, fadeOut: 12, scaleNote: 6,  scale: "C5:Minor" },
-      { offset: 3, fadeIn: 27, hold: 32, fadeOut: 16, scaleNote: 4,  scale: "C5:Minor" },
-      { offset: 3, fadeIn: 21, hold: 42, fadeOut: 18, scaleNote: 6,  scale: "C5:Minor" },
-      { offset: 9, fadeIn: 27, hold: 28, fadeOut: 20, scaleNote: 11, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 21, hold: 42, fadeOut: 18, scaleNote: 9,  scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 42, fadeOut: 46, scaleNote: 11, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    [100, "~"]
+      { offset: 0, fadeIn: 24, hold: 42, fadeOut: 16, scaleNote: "11", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 27, hold: 44, fadeOut: 18, scaleNote: "9",  scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 31, hold: 36, fadeOut: 20, scaleNote: "8",  scale: arrangeKeys[0] },
+      { offset: 9, fadeIn: 23, hold: 36, fadeOut: 16, scaleNote: "6",  scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 25, hold: 38, fadeOut: 12, scaleNote: "6",  scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 27, hold: 32, fadeOut: 16, scaleNote: "4",  scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 21, hold: 42, fadeOut: 18, scaleNote: "6",  scale: arrangeKeys[1] },
+      { offset: 9, fadeIn: 27, hold: 28, fadeOut: 20, scaleNote: "11", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 21, hold: 42, fadeOut: 18, scaleNote: "9",  scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 25, hold: 42, fadeOut: 46, scaleNote: "11", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+7*4+1,
+        "~"
+    ],
+    [3+26*4+1," \
+              9 9 10 9 7 ~ 6 6 \
+              9 7 ~  9 7 ~ 6 6 \
+              9 9 10 9 7 ~ 6 6 \
+              9 ~  ~ 9 7 ~ 6 6 \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              4 4 5 4 2 ~ 1 1 \
+              4 2 ~ 4 2 ~ 1 1 \
+              4 4 5 4 2 ~ 1 1 \
+              4 ~ ~ 4 2 ~ 1 1 \
+              "
+        .scale(arrangeKeys[3])
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              9 9 10 9 7 ~ 6 6 \
+              9 7 ~  9 7 ~ 6 6 \
+              9 9 10 9 7 ~ 6 6 \
+              9 ~  ~ 9 7 ~ 6 6 \
+              "
+        .scale(arrangeKeys[4])
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[2]).seed(2)
 
-guitar_4: electricGuitar(
+let guitar_4 = electricGuitar(
   arrange(
     ...[
-      { offset: 9, fadeIn: 23, hold: 48, fadeOut: 14, scaleNote: 9, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 32, fadeOut: 20, scaleNote: 7, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 42, fadeOut: 22, scaleNote: 6, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 16, scaleNote: 6, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 14, scaleNote: 6, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 20, scaleNote: 3, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 23, hold: 42, fadeOut: 22, scaleNote: 4, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 30, fadeOut: 16, scaleNote: 9, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 23, hold: 38, fadeOut: 20, scaleNote: 7, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 46, scaleNote: 6, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    [100, "~"]
+      { offset: 9, fadeIn: 23, hold: 50, fadeOut: 14, scaleNote: "9", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 29, hold: 32, fadeOut: 20, scaleNote: "7", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 29, hold: 42, fadeOut: 22, scaleNote: "6", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 16, scaleNote: "6", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 14, scaleNote: "6", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 20, scaleNote: "3", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 23, hold: 42, fadeOut: 22, scaleNote: "4", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 30, fadeOut: 16, scaleNote: "9", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 23, hold: 38, fadeOut: 20, scaleNote: "7", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 46, scaleNote: "6", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+11*4+1,
+        "~"
+    ],
+    [3+22*4+1," \
+              9 9 10 9 7 ~ 6 6 \
+              9 7 ~  9 7 ~ 6 6 \
+              9 9 10 9 7 ~ 6 6 \
+              7 ~  ~ 9 7 ~ 6 6 \
+              "
+        .scale(arrangeKeys[2])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)],
+    [2+12*3+2," \
+              4 4 5 4 2 ~ 1 1 \
+              4 2 ~ 4 2 ~ 1 1 \
+              4 4 5 4 2 ~ 1 1 \
+              4 ~ ~ 4 2 ~ 1 1 \
+              "
+        .scale(arrangeKeys[3])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              9 9 10 9 7 ~ 6 6 \
+              9 7 ~  9 7 ~ 6 6 \
+              9 9 10 9 7 ~ 6 6 \
+              7 ~  ~ 9 7 ~ 6 6 \
+              "
+        .scale(arrangeKeys[4])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[3]).seed(3)
 
-// Takes too long probably there's an error here
-guitar_5: electricGuitar(
+let guitar_5 = electricGuitar(
   arrange(
     ...[
-      { offset: 3, fadeIn: 29, hold: 50, fadeOut: 14, scaleNote: 7, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 32, fadeOut: 20, scaleNote: 5, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 42, fadeOut: 16, scaleNote: 4, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 23, hold: 42, fadeOut: 16, scaleNote: 3, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 14, scaleNote: 3, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 20, scaleNote: 2, scale: "C5:Minor" },
-      { offset: 1, fadeIn: 23, hold: 42, fadeOut: 22, scaleNote: 1, scale: "C5:Minor" },
-      { offset: 4, fadeIn: 27, hold: 38, fadeOut: 16, scaleNote: 7, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 23, hold: 38, fadeOut: 20, scaleNote: 5, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 46, scaleNote: 4, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    [100, "~"]
+      { offset: 3, fadeIn: 29, hold: 50, fadeOut: 14, scaleNote: "7", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 29, hold: 32, fadeOut: 20, scaleNote: "5", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 29, hold: 42, fadeOut: 16, scaleNote: "4", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 23, hold: 42, fadeOut: 16, scaleNote: "3", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 14, scaleNote: "3", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 20, scaleNote: "2", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 23, hold: 42, fadeOut: 14, scaleNote: "1", scale: arrangeKeys[1] },
+      { offset: 5, fadeIn: 27, hold: 38, fadeOut: 16, scaleNote: "7", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 23, hold: 38, fadeOut: 20, scaleNote: "5", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 27, hold: 34, fadeOut: 46, scaleNote: "4", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+15*4+1,
+        "~"
+    ],
+    [3+18*4+1," \
+              8 8 9 8 6 ~ 7 7 \
+              8 6 ~ 8 6 ~ 7 7 \
+              8 8 9 8 6 ~ 7 7 \
+              8 ~ ~ 8 6 ~ 7 7 \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              3 3 4 3 1 ~ 0 0 \
+              3 1 ~ 3 1 ~ 0 0 \
+              3 3 4 3 1 ~ 0 0 \
+              3 ~ ~ 3 1 ~ 0 0 \
+              "
+        .scale(arrangeKeys[3])
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              8 8 9 8 6 ~ 7 7 \
+              8 6 ~ 8 6 ~ 7 7 \
+              8 8 9 8 6 ~ 7 7 \
+              8 ~ ~ 8 6 ~ 7 7 \
+              "
+        .scale(arrangeKeys[4])
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[4]).seed(4)
 
-guitar_6: electricGuitar(
+let guitar_6 = electricGuitar(
   arrange(
     ...[
-      { offset: 0, fadeIn: 24, hold: 58, fadeOut: 20, scaleNote: 6, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: 4, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 38, fadeOut: 16, scaleNote: 3, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 23, hold: 54, fadeOut: 18, scaleNote: 1, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 37, hold: 30, fadeOut: 16, scaleNote: 2, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 20, scaleNote: 1, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: 1, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: 6, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: 4, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: 3, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    [100, "~"]
+      { offset: 0, fadeIn: 24, hold: 58, fadeOut: 20, scaleNote: "6", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: "4", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 27, hold: 38, fadeOut: 16, scaleNote: "3", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 23, hold: 46, fadeOut: 18, scaleNote: "1", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 30, fadeOut: 16, scaleNote: "2", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 20, scaleNote: "1", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: "1", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: "6", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: "4", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: "3", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+19*4+1,
+        "~"
+    ],
+    [3+14*4+1," \
+              6 6 7 6 4 ~ 3 3 \
+              6 4 ~ 6 4 ~ 3 3 \
+              6 6 7 6 4 ~ 3 3 \
+              6 ~ ~ 6 4 ~ 3 3 \
+              "
+        .scale(arrangeKeys[2])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              1 1  2 1 -1 ~ -3 -3 \
+              1 -1 ~ 3 1  ~ -3 -3 \
+              1 1  2 1 -1 ~ -3 -3 \
+              1 ~  ~ 3 1  ~ -3 -3 \
+              "
+        .scale(arrangeKeys[3])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              6 6 7 6 4 ~ 3 3 \
+              6 4 ~ 6 4 ~ 3 3 \
+              6 6 7 6 4 ~ 3 3 \
+              6 ~ ~ 6 4 ~ 3 3 \
+              "
+        .scale(arrangeKeys[4])
+        .apply(rot(4,32))
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[5]).seed(5)
 
-guitar_7: electricGuitar(
+let guitar_7 = electricGuitar(
   arrange(
     ...[
-      { offset: 0, fadeIn: 24, hold: 58, fadeOut: 20, scaleNote: 5, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: 3, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 27, hold: 38, fadeOut: 22, scaleNote: 2, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 38, fadeOut: 18, scaleNote: 0, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 30, fadeOut: 16, scaleNote: 1, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 27, hold: 36, fadeOut: 20, scaleNote: 0, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: 0, scale: "C5:Minor" },
-      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: 5, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: 3, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: 1, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    [100, "~"]
+      { offset: 0, fadeIn: 24, hold: 58, fadeOut: 20, scaleNote: "5", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: "3", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 27, hold: 38, fadeOut: 22, scaleNote: "2", scale: arrangeKeys[0] },
+      { offset: 3, fadeIn: 25, hold: 38, fadeOut: 18, scaleNote: "0", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 30, fadeOut: 16, scaleNote: "1", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 27, hold: 28, fadeOut: 20, scaleNote: "0", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: "0", scale: arrangeKeys[1] },
+      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: "5", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: "3", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: "1", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+23*4+1,
+        "~"
+    ],
+    [3+10*4+1," \
+              6 6 7 6 4 ~ 3 3 \
+              6 4 ~ 6 4 ~ 3 3 \
+              6 6 7 6 4 ~ 3 3 \
+              6 ~ ~ 6 4 ~ 3 3 \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              1 1  2 1 -1 ~ -3 -3 \
+              1 -1 ~ 3 1  ~ -3 -3 \
+              1 1  2 1 -1 ~ -3 -3 \
+              1 ~  ~ 3 1  ~ -3 -3 \
+              "
+        .scale(arrangeKeys[3])
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              6 6 7 6 4 ~ 3 3 \
+              6 4 ~ 6 4 ~ 3 3 \
+              6 6 7 6 4 ~ 3 3 \
+              6 ~ ~ 6 4 ~ 3 3 \
+              "
+        .scale(arrangeKeys[4])
+        .gain(g)
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[6]).seed(6)
 
-guitar_8: electricGuitar(
+let guitar_8 = electricGuitar(
   arrange(
     ...[
-      { offset: 24, fadeIn: 24, hold: 34, fadeOut: 20, scaleNote: 4, scale: "E4:Minor" },
-      { offset: 3,  fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: 2, scale: "E4:Minor" },
-      { offset: 3,  fadeIn: 27, hold: 46, fadeOut: 16, scaleNote: 1, scale: "E4:Minor" },
-    ].genFirstMovement(),
+      { offset: 24, fadeIn: 24, hold: 34, fadeOut: 20, scaleNote: "4", scale: arrangeKeys[0] },
+      { offset: 3,  fadeIn: 27, hold: 28, fadeOut: 26, scaleNote: "2", scale: arrangeKeys[0] },
+      { offset: 3,  fadeIn: 27, hold: 38, fadeOut: 16, scaleNote: "1", scale: arrangeKeys[0] },
+      // 2 '~' eightnotes added by genFadeInFadeOut()
+    ].genFadeInFadeOut(),
     [41,
         "~!8"
         .gain(0)
     ],
     ...[
-      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: 4, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: 2, scale: "E4:Minor" },
-      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: 1, scale: "E4:Minor" },
-    ].genFirstMovement(),
-    
-    [100, "~"]
+      { offset: 3, fadeIn: 29, hold: 34, fadeOut: 18, scaleNote: "4", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 25, hold: 34, fadeOut: 22, scaleNote: "2", scale: arrangeKeys[2] },
+      { offset: 3, fadeIn: 29, hold: 26, fadeOut: 46, scaleNote: "1", scale: arrangeKeys[2] },
+    ].genFadeInFadeOut(),
+    [3+20*4+1,
+        "~"
+    ],
+    [3+4," \
+              ~ ~ 3 2 0 ~ ~ ~ \
+              2 0 ~ 2 0 ~ ~ ~ \
+              ~ ~ 3 2 0 ~ ~ ~ \
+              2 ~ ~ 2 0 ~ ~ ~ \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .slow(4)
+    ],
+    [4*12+1," \
+              2 2 3 2 0 ~ -1 -1 \
+              2 0 ~ 2 0 ~ -1 -1 \
+              2 2 3 2 0 ~ -1 -1 \
+              2 ~ ~ 2 0 ~ -1 -1 \
+              "
+        .scale(arrangeKeys[2])
+        .gain(g)
+        .apply(rot(24,32))
+        .slow(4)
+    ],
+    [2+12*3+2," \
+              -3 -3 -2 -3 -5 ~ -6 -6 \
+              -3 -5 ~  -3 -5 ~ -6 -6 \
+              -3 -3 -2 -3 -5 ~ -6 -6 \
+              -3 ~  ~  -3 -5 ~ -6 -6 \
+              "
+        .scale(arrangeKeys[3])
+        .gain(g)
+        .slow(4)
+    ],
+    [1+9*4+3," \
+              2 2 3 2 0 ~ -1 -1 \
+              2 0 ~ 2 0 ~ -1 -1 \
+              2 2 3 2 0 ~ -1 -1 \
+              2 ~ ~ 2 0 ~ -1 -1 \
+              "
+        .scale(arrangeKeys[4])
+        .gain(g)
+        .apply(rot(24,32))
+        .slow(4)
+    ],
+    [1000, "~"]
   )
-)
+).color(colors[7]).seed(7)
 
-bass_guitar_1_2: bassGuitar(
+let guitar_9 = electricGuitar(
+  arrange(
+    [53*4+1,
+        "~"
+    ],
+    ...[
+       { offset: 1, fadeIn: 23, hold: 42,  fadeOut: 18, scaleNote: "[5, 7, 9]",   scale: arrangeKeys[2] },
+       { offset: 5, fadeIn: 23, hold: 58,  fadeOut: 18, scaleNote: "[7, 9, 11]",  scale: arrangeKeys[2] },
+       { offset: 5, fadeIn: 23, hold: 42,  fadeOut: 26, scaleNote: "[9, 11, 13]", scale: arrangeKeys[2] },
+       // key change
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[4, 6, 8]", scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[4, 6, 9]", scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[2, 4, 6]", scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[1, 4]",    scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[0, 2, 4]", scale: arrangeKeys[4] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[2, 4, 6]", scale: arrangeKeys[4] },
+       { offset: 5, fadeIn: 23, hold: 72,  fadeOut: 22, scaleNote: "[4, 6, 8]", scale: arrangeKeys[4] },
+     ].genFadeInFadeOut(),
+     [1000, "~"]
+  )
+).color(colors[8]).seed(8)
+
+let guitar_10 = electricGuitar(
+  arrange(
+    [53*4+1,
+        "~"
+    ],
+    ...[
+       { offset: 1, fadeIn: 23, hold: 42,  fadeOut: 18, scaleNote: "[4, 6]",  scale: arrangeKeys[2] },
+       { offset: 5, fadeIn: 23, hold: 58,  fadeOut: 18, scaleNote: "[6, 8]",  scale: arrangeKeys[2] },
+       { offset: 5, fadeIn: 23, hold: 42,  fadeOut: 26, scaleNote: "[8, 10]", scale: arrangeKeys[2] },
+       //key change
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[0, 3]",  scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[1, 3]",  scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[1, 3]",  scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[0, 3]",  scale: arrangeKeys[3] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[4, 6]",  scale: arrangeKeys[4] },
+       { offset: 5, fadeIn: 23, hold: 34,  fadeOut: 18, scaleNote: "[6, 8]",  scale: arrangeKeys[4] },
+       { offset: 5, fadeIn: 23, hold: 71,  fadeOut: 23, scaleNote: "[8, 10]", scale: arrangeKeys[4] },
+     ].genFadeInFadeOut(),
+     [1000, "~"]
+  )
+).color(colors[8]).seed(9)
+
+let bass_guitar_1_2 = bassGuitar(
    arrange(
      ...[
-       { offset: 33, fadeIn: 23, hold: 8,  fadeOut: 24, scaleNote: "[3, 10]", scale: "E1:Minor" },
-       { offset: 26, fadeIn: 22, hold: 18, fadeOut: 22, scaleNote: "[5, 12]", scale: "E1:Minor" },
-       { offset: 22, fadeIn: 26, hold: 18, fadeOut: 22, scaleNote: "[0, 7]",  scale: "E1:Minor" },
-       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: "[5, 12]", scale: "C2:Minor" },
-       { offset: 24, fadeIn: 38, hold: 10, fadeOut: 14, scaleNote: "[7, 14]", scale: "C2:Minor" },
-       { offset: 26, fadeIn: 22, hold: 10, fadeOut: 22, scaleNote: "[5, 12]", scale: "C2:Minor" },
-       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: 9,         scale: "C2:Minor" },
-       { offset: 24, fadeIn: 28, hold: 14, fadeOut: 18, scaleNote: "[3, 10]", scale: "E1:Minor" },
-       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: "[5, 12]", scale: "E1:Minor" },
-       { offset: 24, fadeIn: 28, hold: 10, fadeOut: 52, scaleNote: "[0, 7]", scale: "E1:Minor" },
-     ].genFirstMovement(),
-     [100, "~"]
+       { offset: 33, fadeIn: 23, hold: 8,  fadeOut: 24, scaleNote: "[-11, -4]", scale: arrangeKeys[0] },
+       { offset: 26, fadeIn: 22, hold: 18, fadeOut: 22, scaleNote: "[-9,  -2]", scale: arrangeKeys[0] },
+       { offset: 22, fadeIn: 26, hold: 18, fadeOut: 22, scaleNote: "[-14, -7]", scale: arrangeKeys[0] },
+       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: "[-16, -9]", scale: arrangeKeys[1] },
+       { offset: 24, fadeIn: 28, hold: 10, fadeOut: 14, scaleNote: "[-14, -7]", scale: arrangeKeys[1] },
+       { offset: 26, fadeIn: 24, hold: 10, fadeOut: 22, scaleNote: "[-16, -9]", scale: arrangeKeys[1] },
+       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: "-12",       scale: arrangeKeys[1] },
+       { offset: 24, fadeIn: 28, hold: 14, fadeOut: 18, scaleNote: "[-11, -4]", scale: arrangeKeys[2] },
+       { offset: 24, fadeIn: 24, hold: 14, fadeOut: 22, scaleNote: "[-9,  -2]", scale: arrangeKeys[2] },
+       { offset: 24, fadeIn: 28, hold: 10, fadeOut: 52, scaleNote: "[-14, -7]", scale: arrangeKeys[2] },
+     ].genFadeInFadeOut(),
+     [3+25*4+2,
+        "~"
+    ],
+    ...[
+       { offset: 4,  fadeIn: 20, hold: 24,  fadeOut: 20, scaleNote: "[-11, -4]", scale: arrangeKeys[2] },
+       { offset: 24, fadeIn: 20, hold: 42,  fadeOut: 18, scaleNote: "[-9,  -2]", scale: arrangeKeys[2] },
+       { offset: 24, fadeIn: 20, hold: 26,  fadeOut: 26, scaleNote: "[-14, -7]", scale: arrangeKeys[2] },
+       // key change
+       { offset: 24, fadeIn: 20, hold: 18,  fadeOut: 18, scaleNote: "[-16, -9]", scale: arrangeKeys[3] },
+       { offset: 24, fadeIn: 20, hold: 18,  fadeOut: 16, scaleNote: "[-14, -7]", scale: arrangeKeys[3] },
+       { offset: 24, fadeIn: 20, hold: 18,  fadeOut: 18, scaleNote: "[-16, -9]", scale: arrangeKeys[3] },
+       { offset: 24, fadeIn: 20, hold: 18,  fadeOut: 18, scaleNote: "-12",       scale: arrangeKeys[3] },
+       { offset: 24, fadeIn: 20, hold: 18,  fadeOut: 18, scaleNote: "[-11, -4]", scale: arrangeKeys[4] },
+       { offset: 20, fadeIn: 18, hold: 18,  fadeOut: 18, scaleNote: "[-9,  -2]", scale: arrangeKeys[4] },
+       { offset: 24, fadeIn: 20, hold: 58,  fadeOut: 22, scaleNote: "[-14,  -7]", scale: arrangeKeys[4] },
+     ].genFadeInFadeOut(),
+     [1000, "~"]
    )
- )
+).color(colors[10]).seed(10)
+
+let fast_1 = stack(
+  guitar_1,
+  guitar_2,
+  guitar_3,
+  guitar_4,
+  guitar_5,
+  guitar_6,
+  guitar_7,
+  guitar_8,
+  guitar_9,
+  guitar_10,
+  bass_guitar_1_2,
+)
+
+$: arrange(
+  [1, fast_1]
+)

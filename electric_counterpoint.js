@@ -7,12 +7,18 @@
 // Force reload on whole file re-evaluation
 clearScope()
 
+// This is set for the final loop on the very beggining so that cycles there correspond to 1sec
+// must be set high in file otherwise
+// on first evaluation it doesnt get triggered (???)
+setcpm(60)
+
 let maxGain = .4 // gain
 
 // time variance between notes for more liveliness
 // scaled to 8-notes so note might appear ♪/desyncScale early/late
 let desyncScale = 32
 
+// Make the note highlight distinguishable
 const colors = [
 '#292f56',
 '#223f6b',
@@ -95,7 +101,7 @@ Array.prototype.genFadeInFadeOut = function (notesPerBar = 8) {
 };
 
 // at the time of writing this there's no rot func in strudel (like one in tidal cycles)
-// early is used here but the rotation is still applied forward
+// early is used here but the rotation is still applied forward (nth step comes "earlier")
 // sadly we have to specify pulses by hand
 const rot = (steps, pulses) =>
   p => p.early(steps / pulses)
@@ -118,6 +124,7 @@ const electricGuitar = (pattern) =>
 const bassGuitar = (pattern) =>
      guitar(pattern)
     .sound("gm_acoustic_bass")
+    // .room(.1)
     // .postgain(.2)
 
 // ----- FAST 1 -----
@@ -809,10 +816,185 @@ let slow_1 = stack(
 
 // ----- FAST 2 -----
 
+const fast_2_arrangeKeys = ["E4:Minor", "C5:Minor"]
 
+const fast_2_motiff_1 = " \
+        13 9 ~ 11@2 8 4 ~ 7 10 8 ~ \
+        "
+
+const fast_2_motiff_2 = " \
+        8 4 ~ 9@2 6 2 ~ 3 6 4 ~\
+        "
+
+let fast_2_guitar_1 = electricGuitar(
+  arrange(
+    [73, fast_2_motiff_1
+        .scale(fast_2_arrangeKeys[0])
+        .gain(1)
+    ],
+    [9, fast_2_motiff_2
+        .scale(fast_2_arrangeKeys[1])
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[0]).seed(0)
+
+let fast_2_guitar_2 = electricGuitar(
+  arrange(
+    [6, "~"],
+    [67, fast_2_motiff_1
+        .scale(fast_2_arrangeKeys[0])
+        .apply(rot(10,12))
+        .gain(1)
+    ],
+    [9, fast_2_motiff_2
+        .scale(fast_2_arrangeKeys[1])
+        .apply(rot(10,12))
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[1]).seed(1)
+
+let fast_2_guitar_3 = electricGuitar(
+  arrange(
+    [9, "~"],
+    [64, fast_2_motiff_1
+        .scale(fast_2_arrangeKeys[0])
+        .apply(rot(3,12))
+        .struct(arrange([2, "~!5 x!3 ~!4"],       // mask is applied after rotation
+                        [3, "~!5 x!3 ~ x!2 ~ "],  // so it matches the sheet and bar progression
+                        [59, "x@2 x!2 ~ x!3 ~ x!2 ~"]))
+        .gain(1)
+    ],
+    [9, fast_2_motiff_2
+        .scale(fast_2_arrangeKeys[1])
+        .apply(rot(3,12))
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[2]).seed(2)
+
+let fast_2_guitar_4 = electricGuitar(
+  arrange(
+    [15, "~"],
+    [58, fast_2_motiff_1
+        .scale(fast_2_arrangeKeys[0])
+        .apply(rot(7,12))
+        .gain(1)
+    ],
+    [9, fast_2_motiff_2
+        .scale(fast_2_arrangeKeys[1])
+        .apply(rot(7,12))
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[3]).seed(3)
+
+// Wasnt sure what to put here as the sheet music has no pauses between chords but this sounds good
+let fast_2_guitar_5 = electricGuitar(
+  arrange(
+    [39, "~"],
+    [34, "[2, 5, 7]@6 [1, 4, 6]@6 [0, 4]@12".slow(2)
+        .scale(fast_2_arrangeKeys[0])
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[4]).seed(4)
+
+// Wasnt sure what to put here as the sheet music has no pauses between chords but this sounds good
+let fast_2_guitar_6 = electricGuitar(
+  arrange(
+    [51, "~"],
+    [22, "~@2 [2, 5, 7]@6 [3, 6, 8]@6 [4, 7, 9]@10 ".slow(2)
+        .scale(fast_2_arrangeKeys[0])
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[5]).seed(5)
+
+// Wasnt sure what to put here as the sheet music has no pauses between chords but this sounds good
+let fast_2_guitar_7 = electricGuitar(
+  arrange(
+    [63, "~"],
+    [10, "~@4 [2, 5, 7]@6 [3, 6, 8]@6 [1, 4, 6]@8 ".slow(2)
+        .scale(fast_2_arrangeKeys[0])
+        .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[6]).seed(6)
+
+let fast_2_bass_1 = bassGuitar(
+  arrange(
+    [23, "~"],
+    [50, "-11 ~ -4 ~ -11 -4 ~ ~ -9 ~ ~ -2 \
+          -9 ~ -2 ~ -14 -7 ~ ~ -14 ~ -7 ~ "
+          .struct(arrange(
+            [2, "x ~ x ~ x x ~ ~ x ~ ~ x \
+                ~!12"],
+            [2, "x ~ x ~ x x ~ ~ x ~ ~ x \
+                 x ~ x ~!9"],
+            [21,"x ~ x ~ x x ~ ~ x ~ ~ x \
+                 x ~ x ~ x x ~ ~ x ~ x ~"],
+          )).slow(2) // Here bars are slowed by 2 so we apply the structure to division of 2
+         .scale(fast_2_arrangeKeys[0])
+         .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[7]).seed(7)
+.transpose(-12)
+.sound("gm_electric_bass_finger")
+// .legato(1.1)
+// .compressor("-20:20:10:.002:.02")
+// .dist(1.1)
+
+let fast_2_bass_2 = bassGuitar(
+  arrange(
+    [23, "~"],
+    [50, "-11 ~ ~ -4 -11 ~ -4 ~ -9 -2 ~ ~ \
+          -9 ~ ~ -2 -14 ~ -7 ~ -14 -7 ~ ~ "
+          .struct(arrange(
+            [2, "x ~ ~ x x ~ x ~ x x ~ ~ \
+                 ~!12"],
+            [2, "x ~ ~ x x ~ x ~ x x ~ ~ \
+                 x ~!11"],
+            [21,"x ~ ~ x x ~ x ~ x x ~ ~ \
+                 x ~ ~ x x ~ x ~ x x ~ x"],
+          )).slow(2) // Here bars are slowed by 2 so we apply the structure to division of 2
+         .scale(fast_2_arrangeKeys[0])
+         .gain(1)
+    ],
+    [1, "~"], // For easier aligment in the final loop
+  )
+).color(colors[8]).seed(8)
+.transpose(-12)
+.sound("gm_electric_bass_finger")
+// .legato(1.1)
+// .compressor("-20:20:10:.002:.02")
+// .dist(1.1)
+
+let fast_2 = stack(
+  fast_2_guitar_1,
+  fast_2_guitar_2,
+  fast_2_guitar_3,
+  fast_2_guitar_4,
+  fast_2_guitar_5,
+  fast_2_guitar_6,
+  fast_2_guitar_7,
+  fast_2_bass_1,
+  fast_2_bass_2,
+)
+.cpm(192/6)
+// .early(perlin.range(-1/(12*desyncScale),1/(12*desyncScale))) // Makes notes dissapear in the first couple of bars (???)
 
 // Couldnt find a better solution to playing them sequentially
 // we specify the time division how much they'd take if placed in a single cycle in seconds
-setcpm(60)
-$: "< a@412 b@183 >".pickRestart({ a: fast_1, b: slow_1})
-  .early(0) // Specify the starting second
+$: "< a@412 b@183 c@1000 >".pickRestart({ a: fast_1, b: slow_1, c: fast_2 })
+  .early(0) // Specify the starting second i.e 412 to start on slow_1
